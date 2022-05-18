@@ -15,23 +15,16 @@ class _FileReader extends State<FileReader> {
   final String _no_content = "No Content";
   String _content = "";
 
-  void _fileSelection() {
-    setState(() async {
+  Future<String> _fileSelection() async {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
-          type: FileType.custom, allowedExtensions: ['txt', 'pdf', 'doc']);
-      _textReader(result);
-    });
+          type: FileType.custom, allowedExtensions: ['txt']);
+      if (result != null) {
+        File file = File(result.files.first.path.toString());
+        return await file.readAsString();
+      }
+      return _no_content;
   }
 
-  void _textReader(FilePickerResult? result) async {
-    if (result != null) {
-      File file = File(result.files.first.path.toString());
-      _content = await file.readAsString();
-      print(_content);
-    } else {
-      _content = _no_content;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +35,6 @@ class _FileReader extends State<FileReader> {
       ),
       body: Center(
         child: SingleChildScrollView(
-
           padding: EdgeInsets.fromLTRB(0, 0, 0, 60),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -62,7 +54,12 @@ class _FileReader extends State<FileReader> {
           Container(
               margin: const EdgeInsets.all(10),
               child: FloatingActionButton(
-                onPressed: _fileSelection,
+                onPressed: (){
+                  String result = _fileSelection() as String;
+                  setState(()  {
+                    _content = result;
+                  });
+                },
                 child: const Icon(Icons.attach_file_outlined),
               )),
           Container(
